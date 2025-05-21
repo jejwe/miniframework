@@ -41,19 +41,35 @@ class Db
             throw new Exception('Adapter name must be specified in a string.');
         }
         
-        if (! in_array($adapter, [
-            'Mysql'
+        if (! in_array(ucfirst(strtolower($adapter)), [ // Normalize to check
+            'Mysql',
+            'Wordpress', // Add Wordpress
+            'Wpdbadapter' // Add Wpdbadapter (case-insensitive check)
         ])) {
             throw new Exception('Adapter "' . $adapter . '" does not exist.');
         }
         
-        $adapterName = '\\Mini\\Db\\' . ucwords($adapter);
+        $normalizedAdapter = ucfirst(strtolower($adapter));
+        if ($normalizedAdapter == 'Wordpress' || $normalizedAdapter == 'Wpdbadapter') {
+            $adapterName = '\\Mini\\Db\\WpdbAdapter';
+        } else {
+            $adapterName = '\\Mini\\Db\\' . ucwords($adapter); // Original behavior for other adapters
+        }
         
         if (! class_exists($adapterName)) {
             throw new Exception('Adapter "' . $adapterName . '" not found.');
         }
         
-        $dbAdapter = new $adapterName($params);
+        // For WpdbAdapter, params are not strictly needed for connection,
+        // as it uses global $wpdb. The WpdbAdapter constructor handles this.
+        if ($normalizedAdapter == 'Wordpress' || $normalizedAdapter == 'Wpdbadapter') {
+            $dbAdapter = new $adapterName(); // WpdbAdapter constructor takes no params or uses defaults
+        } else {
+            if (empty($params)) { // Existing adapters might need params
+                throw new Exception('Database configuration parameters are required for adapter ' . $adapter);
+            }
+            $dbAdapter = new $adapterName($params);
+        }
         
         if (! $dbAdapter instanceof \Mini\Db\Db_Abstract) {
             throw new Exception('Adapter class "' . $adapterName . '" does not extend Db_Abstract.');

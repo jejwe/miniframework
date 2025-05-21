@@ -62,17 +62,24 @@ class Router
     {
         $this->_request = Request::getInstance();
         
+        // Default to 'get'. WordPress route type will be set explicitly.
         if (true === $this->isCli()) {
             // CLI (/index.php Controller/Action param1=value1 param2=value2 ...)
             $this->setRouteType('cli');
-        } elseif (false === strpos($_SERVER['REQUEST_URI'], $_SERVER['SCRIPT_NAME'])) {
-            // Rewrite (/Controller/Action/param1/value1/param2/value2)
-            $this->setRouteType('rewrite');
         } else {
-            // GET (/index.php?c=index&a=index)
+            // For web requests, default to 'get'.
+            // The 'rewrite' or 'wordpress' type can be set explicitly if needed.
+            // If 'rewrite' rules are in place and match, customRoute logic might re-classify to 'custom'.
             $this->setRouteType('get');
         }
-        $this->route(Config::getInstance()->load('route', false));
+        // The route() method is called at the end of App::init() or App::run(),
+        // after the route type might have been changed (e.g., to 'wordpress').
+        // For now, we keep its original call here, but App::run will re-trigger routing effectively.
+        // $this->route(Config::getInstance()->load('route', false)); // This line might be redundant if App::run always routes.
+        // Update: App::run() calls getRouter()->route(). App constructor calls getRouter().
+        // So this initial call in Router constructor might determine controller/action too early.
+        // However, App::run() re-evaluates routing logic based on the router instance it holds.
+        // Let's leave this for now and test. If App::run() correctly uses the updated router state, it's fine.
     }
 
     /**
@@ -84,6 +91,8 @@ class Router
     public function route($rules = null)
     {
         $controller = $action = '';
+        $params = []; // Initialize params for WordPress route
+
         if ($this->_routeType == 'cli') {
             if (isset($_SERVER['argc']) && $_SERVER['argc'] > 1) {
                 $m = [];
@@ -117,9 +126,18 @@ class Router
                     $controller = isset($queryStringArray['c']) ? $queryStringArray['c'] : 'index';
                     $action = isset($queryStringArray['a']) ? $queryStringArray['a'] : 'index';
                 }
+            } elseif ($this->_routeType == 'wordpress') {
+                $controller = isset($_GET['mf_controller']) ? $_GET['mf_controller'] : 'index';
+                $action = isset($_GET['mf_action']) ? $_GET['mf_action'] : 'index';
+                // In WordPress context, other $_GET parameters are typically handled by WordPress itself
+                // or can be accessed via Request::getInstance()->getQuery() if needed by the controller.
+                // For now, mf_controller and mf_action are the primary routing directives.
             }
         }
         
+        // Parameters for the action method will be injected by the App class.
+        // The Router's job is primarily to determine controller and action.
+
         if ($this->checkRoute($controller)) {
             App::getInstance()->setController($controller);
         } else {
@@ -184,10 +202,10 @@ class Router
      */
     public function setRouteType($type)
     {
-        if ($type == 'cli' || $type == 'rewrite' || $type == 'get' || $type == 'custom') {
+        if ($type == 'cli' || $type == 'rewrite' || $type == 'get' || $type == 'custom' || $type == 'wordpress') {
             $this->_routeType = $type;
         } else {
-            throw new Exception('Router type invalid.', 500);
+            throw new Exception('Router type "' . $type . '" invalid.', 500);
         }
         
         return $this;

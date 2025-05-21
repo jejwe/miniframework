@@ -170,6 +170,67 @@ function isDate($date, $formats = ['Y-m-d', 'Y/m/d'])
 }
 
 /**
+ * Generates a URL for the Miniframework plugin page within WordPress admin.
+ *
+ * @param array $params Parameters for the URL (e.g., ['mf_controller' => 'user', 'mf_action' => 'edit', 'id' => 123])
+ * @param string|null $page_slug The WordPress page slug for the Miniframework admin page. Defaults to MINIFRAMEWORK_MAIN_SLUG or 'miniframework-main-page'.
+ * @return string The generated URL.
+ */
+function mf_plugin_url(array $params = [], $page_slug = null)
+{
+    if (defined('ABSPATH') && function_exists('admin_url') && function_exists('add_query_arg')) {
+        // Determine the page slug
+        if ($page_slug === null) {
+            $page_slug = defined('MINIFRAMEWORK_MAIN_SLUG') ? MINIFRAMEWORK_MAIN_SLUG : 'miniframework-main-page';
+        }
+
+        // Ensure mf_controller and mf_action are present, default to 'index'
+        $params['mf_controller'] = isset($params['mf_controller']) ? $params['mf_controller'] : 'index';
+        $params['mf_action'] = isset($params['mf_action']) ? $params['mf_action'] : 'index';
+        
+        $query_args = array_merge(['page' => $page_slug], $params);
+        return add_query_arg($query_args, admin_url('admin.php'));
+    } else {
+        // Fallback for non-WordPress environment
+        $baseUrl = \Mini\Base\Request::getInstance()->getBaseUrl();
+        $url = $baseUrl;
+        $url .= isset($params['mf_controller']) ? '/' . $params['mf_controller'] : '/index';
+        $url .= isset($params['mf_action']) ? '/' . $params['mf_action'] : '/index';
+        
+        // Store controller and action to remove them from query string for non-rewrite mode
+        $controller = isset($params['mf_controller']) ? $params['mf_controller'] : 'index';
+        $action = isset($params['mf_action']) ? $params['mf_action'] : 'index';
+
+        unset($params['mf_controller'], $params['mf_action']);
+        
+        // Determine route type to build URL correctly for 'get' vs 'rewrite'
+        // This is a simplified assumption. A more robust solution would involve the Router.
+        $routeType = \Mini\Base\App::getInstance()->getRouter()->getRouteType();
+
+        if ($routeType == 'get') {
+            $getParams = ['c' => $controller, 'a' => $action];
+            if (!empty($params)) {
+                $getParams = array_merge($getParams, $params);
+            }
+            return $baseUrl . '/index.php?' . http_build_query($getParams);
+        } else { // rewrite or other
+            if (!empty($params)) {
+                // For rewrite, typically params are part of the path or query string
+                // This example adds them as query string for simplicity after controller/action path
+                 $pathParams = '';
+                 foreach($params as $key => $value) {
+                     $pathParams .= '/' . rawurlencode($key) . '/' . rawurlencode($value);
+                 }
+                 $url .= $pathParams;
+                 // If there are still other params not fitting the path structure, add as query
+                 // $url .= '?' . http_build_query($other_params_if_any);
+            }
+            return $url;
+        }
+    }
+}
+
+/**
  * 变量输出
  *
  * @param mixed $var

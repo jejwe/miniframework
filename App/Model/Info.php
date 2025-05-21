@@ -12,28 +12,42 @@ use Mini\Base\Model;
  */
 class Info extends Model
 {
-    public function getInfo()
+    public function getWordPressInfo()
     {
-        //获取数据库对象-方式1
-        //如果你开启了数据库自动连接功能，就可以用下面这行代码自动加载数据库对象了
-        //$db = $this->loadDb('default');
+        // $this->_db is initialized in the Model's constructor via App::loadDb('default')
+        // which should now be the WpdbAdapter.
+        // The parent Model class (Mini\Base\Model) constructor handles this:
+        // if (DB_AUTO_CONNECT === true && $db === null) {
+        //     $db = $this->loadDb('default');
+        // }
+        // if ($db) {
+        //     parent::__construct($db); // parent is Query, which stores $db in $this->_db
+        // }
+
+        if (!$this->_db) {
+            return 'Error: Database connection not available in Info Model.';
+        }
+
+        // Example 1: Get WordPress site URL from options table
+        $prefix = $this->_db->getTablePrefix(); // WpdbAdapter has getTablePrefix()
+        $sql = "SELECT option_value FROM {$prefix}options WHERE option_name = 'siteurl'";
         
-        //获取数据库对象-方式2
-        //这是手工连接数据库的方法，需要解开顶部 use Mini\Db\Db; 和 use Mini\Base\Config; 两行代码的注释
-        //$dbParams = Config::getInstance()->load('database:default');
-        //$db = Db::factory('Mysql', $dbParams);
-        
-        //获取数据库对象-方式3
-        //MiniFramework 从 2.0 开始支持直接调用 Mini\Db\Mysql
-        //  需要解开顶部的 user Mini\Db\Mysql; 和 use Mini\Base\Config; 两行代码的注释
-        //  这样直接调用的好处是可以让IDE更好地对类的方法进行提示，方便开发者进行编码。
-        //$dbParams = Config::getInstance()->load('database:default');
-        //$db = new Mysql($dbParams);
-        
-        //通过上边三种方法获取到数据库对象后，就可以用获取到的对象查询数据库了，例如：
-        //$data = $db->query('SELECT * FROM log');
-        //dump($data);
-        
-        return "Hello World!";
+        // Use query($sql, 'row') as per Db_Abstract and WpdbAdapter implementation
+        $result = $this->_db->query($sql, 'row'); 
+
+        if ($result) {
+            return 'Site URL from WP options: ' . (is_array($result) ? $result['option_value'] : $result->option_value);
+        } else {
+            // Example 2: If options table access is complex or fails, try DB version as a fallback test
+            // $sqlVersion = "SELECT @@VERSION as version";
+            // $versionResult = $this->_db->query($sqlVersion, 'row');
+            // if ($versionResult) {
+            //    return 'Database Version: ' . (is_array($versionResult) ? $versionResult['version'] : $versionResult->version);
+            // }
+            
+            // WpdbAdapter now has getLastError()
+            $lastError = $this->_db->getLastError(); 
+            return 'Could not fetch site URL. DB Last Error: ' . ($lastError ? $lastError : 'No specific error message.');
+        }
     }
 }

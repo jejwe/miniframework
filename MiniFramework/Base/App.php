@@ -262,15 +262,40 @@ class App
      */
     private function initDbPool()
     {
-        $dbConfig = Config::getInstance()->load('database');
-        if (is_array($dbConfig)) {
-            foreach ($dbConfig as $dbKey => $dbParams) {
-                $this->_dbPool[$dbKey] = \Mini\Db\Db::factory('Mysql', $dbParams);
+        if (defined('ABSPATH') && isset($GLOBALS['wpdb'])) {
+            // WordPress environment, use $wpdb
+            try {
+                // The WpdbAdapter constructor will grab the global $wpdb.
+                // The Db::factory() modification will handle the 'Wordpress' type.
+                $this->_dbPool['default'] = \Mini\Db\Db::factory('Wordpress');
+            } catch (\Mini\Base\Exception $e) {
+                // Log or handle the error appropriately
+                error_log('Miniframework: Failed to initialize WpdbAdapter - ' . $e->getMessage());
+                // Optionally re-throw or handle gracefully depending on application needs
+                throw $e; 
             }
         } else {
-            throw new Exception('Config "database" invalid.');
+            // Original logic for non-WordPress environments
+            $dbConfig = Config::getInstance()->load('database');
+            if (is_array($dbConfig)) {
+                foreach ($dbConfig as $dbKey => $dbParams) {
+                    // Assuming 'Mysql' was the default or specified in config.
+                    // If dbParams contains an 'adapter' key, Db::factory should use it.
+                    // For simplicity, if not specified, it defaults based on Db::factory's original default.
+                    $adapterType = isset($dbParams['adapter']) ? $dbParams['adapter'] : 'Mysql';
+                    $this->_dbPool[$dbKey] = \Mini\Db\Db::factory($adapterType, $dbParams);
+                }
+            } else {
+                // Only throw an error if database config is expected but not found/valid
+                // If DB_AUTO_CONNECT is true, it implies config is expected.
+                if (DB_AUTO_CONNECT === true) { // Check if auto-connect implies config is mandatory
+                    throw new Exception('Config "database" invalid or not found for non-WordPress setup.');
+                }
+                // If DB_AUTO_CONNECT is false, or it's a non-WP setup where DB is optional,
+                // then not having a valid dbConfig might be acceptable.
+                // For now, let's assume if initDbPool is called, a valid config is expected in non-WP.
+            }
         }
-        
         return true;
     }
 
