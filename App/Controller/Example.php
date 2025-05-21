@@ -1,19 +1,19 @@
 <?php
 namespace App\Controller;
 
-use Mini\Base\{Action, Session, Upload, Log, Params, Response};
+use Mini\Base\{Controller, Session, Upload, Log, Params, Response}; // Updated Action to Controller
 use Mini\Captcha\Captcha;
 use Mini\Helpers\Debug;
 
 /**
  * Example
  */
-class Example extends Action
+class Example extends Controller // Updated base class
 {
     /**
      * 示例的首页
      */
-    function indexAction()
+    function index() // Renamed method
     {
         $this->view->display();
     }
@@ -21,7 +21,7 @@ class Example extends Action
     /**
      * Example 1: Captcha
      */
-    function captchaAction()
+    function captcha() // Renamed method
     {
         if (!empty($_POST['code'])) {
             $captcha = new Captcha();
@@ -37,7 +37,7 @@ class Example extends Action
         $this->view->display();
     }
     
-    function getcaptchaAction()
+    function getcaptcha() // Renamed method
     {
         $captcha = new Captcha();
         $captcha->create();
@@ -46,7 +46,7 @@ class Example extends Action
     /**
      * Example 2: Session
      */
-    function sessionAction()
+    function session() // Renamed method
     {
         $t = time();
         $this->view->assign('t', $t);
@@ -64,7 +64,7 @@ class Example extends Action
     /**
      * Example 3: Upload
      */
-    function uploadAction()
+    function upload() // Renamed method
     {
         if (! empty($_FILES)) {
             $upload = new Upload();
@@ -84,7 +84,7 @@ class Example extends Action
     /**
      * Example 4: Log
      */
-    function logAction()
+    function log() // Renamed method
     {
         $message = 'This is a log test.';
         $log_status = LOG_ON === true ? '开启' : '关闭';
@@ -107,7 +107,7 @@ class Example extends Action
     /**
      * Example 5: Debug(timer)
      */
-    function debugtimerAction()
+    function debugtimer() // Renamed method
     {
         // 计时开始
         Debug::timerStart();
@@ -136,7 +136,7 @@ class Example extends Action
     /**
      * Example 6: Sign
      */
-    function signAction()
+    function sign() // Renamed method
     {
         // 待签名的数据
         $data = [
@@ -169,7 +169,7 @@ class Example extends Action
     /**
      * Example 7: Verify Sign
      */
-    function verifysignAction()
+    function verifysign() // Renamed method
     {
         $signObj = new \Mini\Security\Sign();
         
@@ -189,7 +189,7 @@ class Example extends Action
     /**
      * Example 8: Route
      */
-    function routeAction()
+    function route() // Renamed method
     {
         //自定义的路由规则配置在 Config/route.php 中
         
@@ -204,7 +204,7 @@ class Example extends Action
     /**
      * Example 9: Response
      */
-    function responseAction()
+    function response() // Renamed method
     {
         // 输出的内容
         $data = 'Hello MiniFramework!';
@@ -219,7 +219,7 @@ class Example extends Action
     /**
      * Example 10: Encryption
      */
-    function encryptionAction()
+    function encryption() // Renamed method
     {
         // 密钥
         $key = 'Abc123';

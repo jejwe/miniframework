@@ -231,7 +231,7 @@ class App
                 throw new Exception('Controller "' . $controllerName . '" does not exist.', 404);
             }
             
-            $action = $this->action . 'Action';
+            $action = $this->action; // Removed 'Action' suffix
             
             if (method_exists($controller, $action)) {
                 $controller->$action($arguments);

@@ -1,12 +1,12 @@
 <?php
 namespace App\Controller;
 
-use Mini\Base\Action;
+use Mini\Base\Controller; // Updated use statement
 
 /**
  * 这是一个控制器的案例
  */
-class Index extends Action
+class Index extends Controller // Updated base class
 {
     /**
      * 初始化
@@ -23,7 +23,7 @@ class Index extends Action
     /**
      * 默认动作
      */
-    function indexAction()
+    function index() // Renamed method
     {
         // 实例化一个模型
         $info = new \App\Model\Info();

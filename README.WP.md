@@ -36,7 +36,7 @@
 *   **WordPress 生成 URL**: 插件的后台管理页面 URL 现在由 WordPress 生成。例如，在 `miniframework-plugin.php` 中通过 `add_menu_page` 创建的主菜单页面，其基础 URL 通常类似于 `wp-admin/admin.php?page=miniframework-main-page` (其中 `miniframework-main-page` 是菜单的 slug)。
 *   **GET 参数指定路由**: Miniframework 的控制器 (Controller) 和动作 (Action) 通过特定的 GET 请求参数 `mf_controller` 和 `mf_action` 来指定。
     *   例如: `wp-admin/admin.php?page=miniframework-main-page&mf_controller=mycontroller&mf_action=myaction`
-    *   这将路由到 `App/Controller/Mycontroller.php` 中的 `myactionAction()` 方法。
+    *   这将路由到 `App/Controller/Mycontroller.php` 中的 `myaction()` 方法 (注意：`Action` 后缀已从方法名中移除)。
 *   **辅助函数 `mf_plugin_url()`**: 为了方便生成插件内部的正确链接（例如，在视图中链接到其他控制器/动作），框架提供了一个名为 `mf_plugin_url(array $params = [], $page_slug = null)` 的辅助函数。此函数定义在 `MiniFramework/Function/Global.func.php` 中。
     *   示例用法: `echo mf_plugin_url(['mf_controller' => 'user', 'mf_action' => 'list']);`
 *   **`.htaccess` 无效**: Miniframework 自带的用于 URL 重写的 `.htaccess` 文件（通常位于 `App/Public/` 目录下）在 WordPress 插件模式下是无效的。所有 URL 解析和路由现在完全由 WordPress 的查询参数机制处理。
@@ -94,8 +94,8 @@
 ### 控制器 (Controllers)
 
 *   在 `App/Controller/` 目录下创建您的控制器类。
-*   控制器类应继承自 `\Mini\Base\Action`。
-*   控制器中的方法（动作）名称应以 `Action` 结尾，例如 `indexAction()`，`listUsersAction()`。
+*   控制器类应继承自 `\Mini\Base\Controller`。
+*   控制器中的方法（动作）名称直接对应路由中的动作名，不再需要 `Action` 后缀。例如，如果动作是 `index`，则方法名为 `index()`；如果动作是 `listUsers`，则方法名为 `listUsers()`。
 *   可以通过 `$this->view` 访问视图对象。
 
 ### 模型 (Models)
@@ -106,7 +106,7 @@
 
 ### 视图 (Views)
 
-*   视图文件应放置在 `App/View/controllername/actionname.php` 路径下，其中 `controllername` 是控制器名称的小写形式（不含 "Controller" 后缀），`actionname` 是动作名称的小写形式（不含 "Action" 后缀）。
+*   视图文件应放置在 `App/View/controllername/actionname.php` 路径下，其中 `controllername` 是控制器名称的小写形式（不含 "Controller" 后缀），`actionname` 是动作名称的小写形式。
 *   在控制器中，使用 `$this->view->assign('variableName', $value);` 将数据从控制器传递到视图。
 *   在控制器中，调用 `$this->view->display();` 来渲染并显示相应的视图文件。
 *   在视图文件中，可以通过 `$this->variableName` 来访问传递过来的数据。

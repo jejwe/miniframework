@@ -26,7 +26,7 @@ namespace Mini\Base;
 
 use Mini;
 
-class Action
+class Controller
 {
 
     /**
@@ -69,7 +69,7 @@ class Action
      *
      * @param string $controller            
      * @param string $action            
-     * @return Action
+     * @return Controller
      */
     function __construct()
     {

@@ -1,15 +1,15 @@
 <?php
 namespace App\Controller;
 
-use Mini\Base\Action;
+use Mini\Base\Controller; // Updated use statement
 
 /**
  * 这是一个自定义错误页
  */
-class Error extends Action
+class Error extends Controller // Updated base class
 {
     
-    function indexAction($error)
+    function index($error) // Renamed method
     {
         $info = '';
         switch ($error['code']) {

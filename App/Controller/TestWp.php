@@ -1,15 +1,15 @@
 <?php
 namespace App\Controller;
 
-use Mini\Base\Action;
+use Mini\Base\Controller; // Updated use statement
 use App\Model\Info; // Assuming 'App' namespace is autoloaded for the App/ directory
 
-class TestWp extends Action
+class TestWp extends Controller // Updated base class
 {
-    public function indexAction()
+    public function index() // Renamed method
     {
-        // The View object ($this->view) is automatically created by Mini\Base\Action
-        // The constructor of Action calls $this->initView();
+        // The View object ($this->view) is automatically created by Mini\Base\Controller
+        // The constructor of Controller calls $this->initView();
         // $this->initView() creates $this->view = new \Mini\Base\View();
 
         $infoModel = new Info();
