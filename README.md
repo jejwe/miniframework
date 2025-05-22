@@ -13,14 +13,14 @@
 
 将 Miniframework 作为 WordPress 插件安装非常简单：
 
-1.  **复制文件**: 将整个 Miniframework 项目文件夹（包含 `App/`, `MiniFramework/` 和 `miniframework-plugin.php` 等）复制到您的 WordPress 安装目录下的 `wp-content/plugins/` 文件夹中。您可以将项目文件夹重命名为您插件的名称，例如 `my-miniframework-plugin`。
+1.  **复制文件**: 将整个 Miniframework 项目文件夹（包含 `App/`, `MiniFramework/` 和 `index.php` 等）复制到您的 WordPress 安装目录下的 `wp-content/plugins/` 文件夹中。您可以将项目文件夹重命名为您插件的名称，例如 `my-miniframework-plugin`。
 2.  **后台激活**:
     *   登录到您的 WordPress 后台。
     *   导航到 “插件” 页面。
     *   在插件列表中找到您刚刚添加的 Miniframework 插件。
     *   点击 “激活” 链接。
 
-激活后，插件的主入口文件 `miniframework-plugin.php` 将负责初始化和运行 Miniframework 应用。
+激活后，插件的主入口文件 `index.php` 将负责初始化和运行 Miniframework 应用。
 
 ## 3. 核心变化 (Core Changes)
 
@@ -28,12 +28,12 @@
 
 ### 入口文件 (Entry Point)
 
-*   **新的唯一入口点**: `miniframework-plugin.php` 文件现在是框架作为 WordPress 插件运行时的唯一入口点。所有对框架的请求都将间接通过此文件由 WordPress 处理。
+*   **新的唯一入口点**: `index.php` 文件现在是框架作为 WordPress 插件运行时的唯一入口点。所有对框架的请求都将间接通过此文件由 WordPress 处理。
 *   **原有入口废弃**: 之前在独立模式下使用的 `App/Public/index.php` (以及 `index-dev.php`, `index-test.php`) 文件不再作为直接的Web访问入口。
 
 ### URL 与路由 (URL and Routing)
 
-*   **WordPress 生成 URL**: 插件的后台管理页面 URL 现在由 WordPress 生成。例如，在 `miniframework-plugin.php` 中通过 `add_menu_page` 创建的主菜单页面，其基础 URL 通常类似于 `wp-admin/admin.php?page=miniframework-main-page` (其中 `miniframework-main-page` 是菜单的 slug)。
+*   **WordPress 生成 URL**: 插件的后台管理页面 URL 现在由 WordPress 生成。例如，在 `index.php` 中通过 `add_menu_page` 创建的主菜单页面，其基础 URL 通常类似于 `wp-admin/admin.php?page=miniframework-main-page` (其中 `miniframework-main-page` 是菜单的 slug)。
 *   **GET 参数指定路由**: Miniframework 的控制器 (Controller) 和动作 (Action) 通过特定的 GET 请求参数 `mf_controller` 和 `mf_action` 来指定。
     *   例如: `wp-admin/admin.php?page=miniframework-main-page&mf_controller=mycontroller&mf_action=myaction`
     *   这将路由到 `App/Controller/Mycontroller.php` 中的 `myaction()` 方法 (注意：`Action` 后缀已从方法名中移除)。
@@ -50,15 +50,15 @@
 ### 静态资源 (Static Assets - CSS, JS)
 
 *   **WordPress 排队机制**: 插件的 CSS 和 JavaScript 文件应通过 WordPress 的标准排队机制加载。
-*   **`miniframework_enqueue_plugin_assets` 函数**: 在 `miniframework-plugin.php` 文件中，提供了一个示例函数 `miniframework_enqueue_plugin_assets($hook_suffix)`，它被挂载到 `admin_enqueue_scripts` 动作钩子上。
+*   **`miniframework_enqueue_plugin_assets` 函数**: 在 `index.php` 文件中，提供了一个示例函数 `miniframework_enqueue_plugin_assets($hook_suffix)`，它被挂载到 `admin_enqueue_scripts` 动作钩子上。
 *   **`wp_enqueue_style` 和 `wp_enqueue_script`**: 在此函数内部，您应该使用 `wp_enqueue_style()` 来加载 CSS 文件，使用 `wp_enqueue_script()` 来加载 JavaScript 文件。
 *   **`plugins_url()` 生成 URL**: 必须使用 `plugins_url('path/to/asset', __FILE__)` 函数来生成指向位于插件目录内静态资源的正确 URL。例如，`plugins_url('App/Public/css/default.css', __FILE__)`。
 *   **按需加载**: 建议在 `miniframework_enqueue_plugin_assets` 函数中检查当前的 `$hook_suffix`，以确保您的静态资源仅在插件自己的管理页面加载，避免不必要的全局加载。
 
 ### 配置 (Configuration)
 
-*   **集中到插件文件**: Miniframework 的主要配置（例如特性开关、路径常量等）已移至主插件文件 `miniframework-plugin.php` 的顶部。
-*   **覆盖默认设置**: 这些常量（如 `DB_AUTO_CONNECT`, `LAYOUT_ON`, `SHOW_ERROR`, `PUBLIC_PATH` 等）在 `MiniFramework/Bootstrap.php` 文件加载 *之前* 定义。由于 `Bootstrap.php` 中的常量定义使用了 `defined('CONSTANT_NAME') || define(...);` 的模式，因此在 `miniframework-plugin.php` 中定义的这些值将有效覆盖框架的默认设置，从而使框架适应 WordPress 环境。
+*   **集中到插件文件**: Miniframework 的主要配置（例如特性开关、路径常量等）已移至主插件文件 `index.php` 的顶部。
+*   **覆盖默认设置**: 这些常量（如 `DB_AUTO_CONNECT`, `LAYOUT_ON`, `SHOW_ERROR`, `PUBLIC_PATH` 等）在 `MiniFramework/Bootstrap.php` 文件加载 *之前* 定义。由于 `Bootstrap.php` 中的常量定义使用了 `defined('CONSTANT_NAME') || define(...);` 的模式，因此在 `index.php` 中定义的这些值将有效覆盖框架的默认设置，从而使框架适应 WordPress 环境。
 
 ## 4. 目录结构 (Directory Structure)
 
@@ -68,10 +68,10 @@
     *   `Controller/`: 存放控制器类。
     *   `Model/`: 存放模型类。
     *   `View/`: 存放视图文件。
-    *   `Public/`: 此目录不再包含 `index.php` 入口文件或 `.htaccess` 规则。它现在主要用于存放静态资源（如 CSS, JS, images），这些资源将通过 WordPress 的排队机制从 `miniframework-plugin.php` 中加载。
+    *   `Public/`: 此目录不再包含 `index.php` 入口文件或 `.htaccess` 规则。它现在主要用于存放静态资源（如 CSS, JS, images），这些资源将通过 WordPress 的排队机制从 `index.php` 中加载。
     *   其他如 `Config/`, `Lang/` 等目录的使用方式保持不变。
 *   **`MiniFramework/`**: 包含 Miniframework 的核心类和文件。通常您不需要修改此目录的内容。
-*   **`miniframework-plugin.php`**: 这是新的 WordPress 插件主文件。它负责：
+*   **`index.php`**: 这是新的 WordPress 插件主文件。它负责：
     *   定义插件头信息。
     *   设置 Miniframework 的配置常量。
     *   包含 `MiniFramework/Bootstrap.php` 来启动框架。
@@ -84,7 +84,7 @@
 
 ### 创建页面 (Admin Pages)
 
-1.  **注册菜单**: 在 `miniframework-plugin.php` 中，使用 WordPress 函数 `add_menu_page()` (用于顶级菜单) 或 `add_submenu_page()` (用于子菜单) 来注册您的插件管理页面。
+1.  **注册菜单**: 在 `index.php` 中，使用 WordPress 函数 `add_menu_page()` (用于顶级菜单) 或 `add_submenu_page()` (用于子菜单) 来注册您的插件管理页面。
 2.  **指定回调函数**: 为菜单注册指定一个回调函数。
 3.  **启动 Miniframework**: 在该回调函数中：
     *   获取 `App` 实例: `$app = \Mini\Base\App::getInstance();`
@@ -116,7 +116,7 @@
 
 *   **WordPress Nonces**: 对于执行数据修改、删除等敏感操作的请求，强烈建议使用 WordPress Nonces (Number used once) 来防止 CSRF (Cross-Site Request Forgery) 攻击。
 *   **权限检查**: 使用 WordPress 的 `current_user_can('capability_name')` 函数来检查当前用户是否拥有执行特定操作所需的权限。
-*   **`CSRF_TOKEN_ON` 配置**: 在 `miniframework-plugin.php` 中，Miniframework 自带的 CSRF 保护功能已通过 `define('CSRF_TOKEN_ON', false);` 默认关闭，以便优先使用 WordPress 的安全机制。
+*   **`CSRF_TOKEN_ON` 配置**: 在 `index.php` 中，Miniframework 自带的 CSRF 保护功能已通过 `define('CSRF_TOKEN_ON', false);` 默认关闭，以便优先使用 WordPress 的安全机制。
 *   **数据校验与清理**: 对所有用户输入数据进行严格的校验 (Validation) 和清理 (Sanitization)。
 
 ## 6. 示例 (Example)
@@ -129,7 +129,7 @@
 
 ## 7. 注意事项 (Important Notes)
 
-*   **`PUBLIC_PATH` 的用途**: 虽然 `PUBLIC_PATH` 常量在 `miniframework-plugin.php` 中被定义为指向插件内部的 `App/Public/` 目录，但在 WordPress 环境中，静态资源（CSS, JS, 图片等）主要通过 `wp_enqueue_style`/`wp_enqueue_script` 和 `plugins_url()` 机制来提供服务和访问。直接依赖 `PUBLIC_PATH` 进行 URL 拼接可能不适用于所有情况。
+*   **`PUBLIC_PATH` 的用途**: 虽然 `PUBLIC_PATH` 常量在 `index.php` 中被定义为指向插件内部的 `App/Public/` 目录，但在 WordPress 环境中，静态资源（CSS, JS, 图片等）主要通过 `wp_enqueue_style`/`wp_enqueue_script` 和 `plugins_url()` 机制来提供服务和访问。直接依赖 `PUBLIC_PATH` 进行 URL 拼接可能不适用于所有情况。
 *   **框架特性评估**: 原 Miniframework 的某些特性，例如其独立的 REST API 模式 (`REST_ON`) 或直接文件写入的日志系统 (`LOG_ON` 设为文件模式时)，在 WordPress 环境中可能需要重新评估其适用性或进行额外配置。例如，REST API 可以考虑使用 WordPress 的 REST API 框架，日志可以考虑集成到 WordPress 的错误处理或使用更通用的日志库。
 *   **WordPress API 优先**: 在开发插件时，如果 WordPress 提供了相应功能的 API (例如用户管理、权限、设置、HTTP请求等)，建议优先使用 WordPress 的 API，以确保最佳的兼容性和安全性。
 
