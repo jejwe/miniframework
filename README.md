@@ -1,124 +1,103 @@
-MiniFramework
-=============
+# Python CherryPy Application
 
-MiniFramework 是一款遵循 Apache2 开源协议发布的，支持 MVC 和 RESTful 的超轻量级 PHP 开发框架。
-MiniFramework 能够帮助开发者用最小的学习成本快速构建 Web 应用，在满足开发者最基础的分层开发、数据库和缓存访问等少量功能基础上，做到尽可能精简，以帮助您的应用基于框架高效运行。
+## Description
 
+This project is a Python application built with the CherryPy framework. It is a conversion from an original PHP MiniFramework project, aiming to replicate its core functionalities and structure in a Python environment.
 
-快速入门
---------
+## Project Structure
 
-MiniFramework 快速入门学习文档：[http://www.miniframework.com/docv2/guide/](http://www.miniframework.com/docv2/guide/)
-
-
-安装部署
---------
-
-[![Latest Stable Version](https://img.shields.io/packagist/v/jasonweicn/miniframework.svg)](https://packagist.org/packages/jasonweicn/miniframework)
-[![Total Downloads](https://img.shields.io/packagist/dt/jasonweicn/miniframework.svg)](https://packagist.org/packages/jasonweicn/miniframework)
-
-通过 Composer 可以快速安装部署一个基于 MiniFramework 的基础应用模板，开发者可以通过这个模板快速开始构建自己的 Web 应用。
-
-### 1.安装 Composer
-
-> 如果已经安装好了 Composer 可跳过本节内容。
-
-在 Linux 系统中，全局安装 Composer 的命令如下：
+The main application code is located within the `python_app` directory:
 
 ```
-curl -sS https://getcomposer.org/installer | php
-mv composer.phar /usr/local/bin/composer
+python_app/
+├── app.py                # Main application entry point (starts CherryPy server)
+├── requirements.txt      # Python package dependencies
+├── config/               # Configuration files
+│   └── settings.py       # Application and CherryPy configurations
+├── controllers/          # Handles incoming web requests and business logic
+│   ├── __init__.py
+│   ├── api_controller.py   # API specific controllers
+│   ├── error_controller.py # Error handling controller
+│   ├── example_controller.py # Example controller
+│   ├── index_controller.py # Main index/root controller
+│   └── root.py             # Initial root controller (can be merged or used for specific root paths)
+├── models/               # Data models and database interaction logic
+│   ├── __init__.py
+│   └── info_model.py       # Example model
+├── static/               # Static assets (CSS, JavaScript, images)
+│   ├── css/
+│   ├── js/
+│   ├── img/
+│   └── uploads/
+├── tests/                # Unit and integration tests
+│   ├── __init__.py
+│   └── test_controllers.py # Example tests for controllers
+├── utils.py              # Utility functions converted from PHP helper functions
+└── views/                # Jinja2 templates for rendering HTML
+    ├── __init__.py
+    ├── error/
+    ├── example/
+    ├── index/
+    └── layouts/          # Base layout templates (e.g., default.html, header.html)
 ```
 
-> Windows 和 MacOS 系统的开发者可前往 Composer 的官网 [https://getcomposer.org/](https://getcomposer.org/) 下载对应的安装包进行安装。
+## Setup and Installation
 
-### 2.通过 Composer 安装 MiniFramework 基础应用模板
+### Prerequisites
+*   Python 3 (Python 3.8+ recommended)
 
-在命令行执行如下命令：
+### Steps
 
-```
-composer create-project --prefer-dist --stability=dev jasonweicn/miniframework-app-basic myapp
-```
+1.  **Clone the repository (if you haven't already):**
+    ```bash
+    git clone <repository_url>
+    cd <repository_directory>
+    ```
 
-> 上述命令结尾的 myapp 为要创建的项目目录，可根据实际情况修改。
+2.  **Create and activate a virtual environment (recommended):**
+    ```bash
+    python3 -m venv venv
+    ```
+    Activate the virtual environment:
+    *   On Linux/macOS:
+        ```bash
+        source venv/bin/activate
+        ```
+    *   On Windows:
+        ```bash
+        venv\Scripts\activate
+        ```
 
-### 3.配置应用
+3.  **Install dependencies:**
+    Navigate to the project root directory (where this README is located) and run:
+    ```bash
+    pip install -r python_app/requirements.txt
+    ```
+    The `python_app/requirements.txt` file should contain `CherryPy` and any other necessary packages.
 
-找到 myapp/Public/index.php 文件，这是应用的入口文件，可在其中定义所需的配置常量，例如：
+## Running the Application
 
-```
-<?php
-/**
- * 应用入口
- */
+1.  **Start the CherryPy server:**
+    Ensure your virtual environment is activated. From the project root directory, run:
+    ```bash
+    python python_app/app.py
+    ```
 
-// 应用命名空间
-const APP_NAMESPACE = 'App';
+2.  **Access the application:**
+    The application will typically be available at: `http://0.0.0.0:8080` (or `http://localhost:8080`).
+    This is based on the default configuration in `python_app/config/settings.py` and `python_app/app.py`.
 
-// 是否显示错误信息
-const SHOW_ERROR = false;
+## Running Tests
 
-// 是否启用布局功能（默认值：false）
-const LAYOUT_ON = true;
+1.  **Execute unit tests:**
+    Ensure your virtual environment is activated. To run the example controller tests, from the project root directory:
+    ```bash
+    python -m unittest python_app/tests/test_controllers.py
+    ```
+    For a more general approach to discover and run all tests within the `python_app/tests` directory:
+    ```bash
+    python -m unittest discover python_app/tests
+    ```
 
-// 兼容多平台的目录分隔符
-const DS = DIRECTORY_SEPARATOR;
-
-// 引入 MiniFramework 就是这么简单
-require dirname(__DIR__) . DS . 'vendor' . DS . 'autoload.php';
-require dirname(__DIR__) . DS . 'vendor' . DS . 'jasonweicn' . DS . 'miniframework' . DS . 'Bootstrap.php';
-```
-
-> 上述代码已经包含在文件中了，最后两行是引入 MiniFramework 框架，通常不需要进行修改即可使用。
-
-### 4.配置站点
-
-请将 myapp/Public 目录配置到 Apache 或 Nginx 作为站点的根目录。
-
-### 5.运行
-
-完成所有配置后，可尝试通过浏览器访问，例如：
-
-http://你的域名/index.php
-
-如页面显示“Hello World!”内容，那么恭喜你，一个基于 MiniFramework 的应用已经运行起来了。
-
-
-参与开发
---------
-
-欢迎所有人参与到 MiniFramework 的项目中，不论是为 MiniFramework 添加新特性，还是发现了 Bug 进行修正，MiniFramework 向所有人开放！
-
-参与开发的流程：
-
-* 首先，开发者应具有一个 GitHub 账号，在 GitHub 登录账号；
-* 进入 MiniFramework 项目页面 [https://github.com/jasonweicn/miniframework](https://github.com/jasonweicn/miniframework)；
-* 将 MiniFramework 项目源码 Fork 到开发者自己的账号下，然后 Clone 到本地计算机硬盘中；
-* 完成代码编写并 Commit 到开发者账号下的 MiniFramework 副本中；
-* 开发者通过 Pull request 提交代码（提交时请详细填写改动细节），等待审核通过。
-
-QQ交流群：745683429 （入群请备注：MF）
-
-
-关于作者
---------
-
-作者：魏杰（Jason）
-
-信箱：jasonwei06@hotmail.com
-
-博客：[http://www.sunbloger.com](http://www.sunbloger.com)
-
-
-开源协议
---------
-
-MiniFramework 遵循 Apache License Version 2.0 开源协议发布。
-
-协议详细内容请浏览项目目录中的 LICENSE 文件。
-
-
-官网地址
---------
-
-网址：[https://www.miniframework.com/](https://www.miniframework.com/)
+---
+This README provides the basic setup and operational instructions for the converted Python CherryPy application.

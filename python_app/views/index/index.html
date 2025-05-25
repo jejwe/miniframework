@@ -1,0 +1,23 @@
+{% extends "layouts/default.html" %}
+
+{% block title %}{{ page_title | default('MiniFramework Python') }}{% endblock %}
+
+{% block content %}
+<p>{{ info }}</p> {# Was: {$info} #}
+{% endblock %}
+
+{% block jscode %}
+<script>
+/*
+This was a Block in the PHP template.
+It's placed in the 'jscode' block defined in layouts/default.html.
+PHP original:
+{beginBlock:jscode}
+<script>
+console.log('this is block');
+</script>
+{endBlock}
+*/
+console.log('this is block - from python_app/views/index/index.html');
+</script>
+{% endblock %}

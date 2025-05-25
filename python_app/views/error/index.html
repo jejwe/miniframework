@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>{{ title }}</title> {# Was: <?php echo $this->title;?> #}
+</head>
+<body>
+  <h1>{{ title }}</h1> {# Was: <?php echo $this->title;?> #}
+  <p>{{ info }}（代码：{{ error_code }}）</p> {# Was: <?php echo $this->info;?>（代码：<?php echo $this->error['code'];?>） #}
+  <hr />
+  <p>Powered by MiniFramework. {{ current_date }}</p> {# Was: <?php echo date('r');?> #}
+</body>
+</html>

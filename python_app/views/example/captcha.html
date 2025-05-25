@@ -1,0 +1,24 @@
+{% extends "layouts/default.html" %}
+
+{% block content %}
+<h1>Example: Captcha</h1>
+
+{% if code %}
+<p>Input code: {{ code }}</p> {# Was: <?php if (isset($this->code)) {echo '<p>input code: ' . $this->code . '</p>';}?> #}
+{% endif %}
+
+{% if info %}
+<p>Check result: {{ info }}</p> {# Was: <?php if (isset($this->info)) {echo '<p>check result: ' . $this->info . '</p>';}?> #}
+{% endif %}
+
+{# Assuming getcaptcha_url and captcha_submit_url will be provided by the controller #}
+{# Or, if these are relative URLs on the same controller, they might not need full path #}
+<img src="{{ getcaptcha_url }}" onclick="this.src='{{ getcaptcha_url }}?t='+Math.random()" />
+
+<form method="post" action="{{ captcha_submit_url }}">
+  <p>code:<input type="text" name="code" value="" />
+  <input type="submit" value="check" /></p>
+</form>
+{% endblock %}
+
+{% block title %}Captcha Example{% endblock %}
